@@ -29,7 +29,7 @@ for i in data['legal']:
 for i in data2['usuarios']:
     for j in i.keys():
         for k in i.values():
-            datos_users = (j, k['telefono'], k['contrasena'], k['provincia'], k['permisos'], k['emails']['total'], k['emails']['phishing'], k['emails']['cliclados'], k['fechas'], len(k['fechas']), k['ips'], len(k['ips']))
+            datos_users = (j, k['telefono'], k['contrasena'], k['provincia'], k['permisos'], k['emails']['total'], k['emails']['phishing'], k['emails']['cliclados'], str(k['fechas']), len(k['fechas']), str(k['ips']), len(k['ips']))
         cursor_obj.execute(insert_users, datos_users)
         con.commit()
 
