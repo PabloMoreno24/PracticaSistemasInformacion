@@ -16,7 +16,7 @@ inser = """INSERT INTO legal (nombre) VALUES (?)"""
 
 for i in data['legal']:
     for j in i.keys():
-        datos = (j)
+        datos = (j,)
         cursor_obj.execute(inser, datos)
         con.commit()
 
