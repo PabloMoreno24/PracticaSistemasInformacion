@@ -46,6 +46,7 @@ for i in rows:
     res+=[i[0]]
 df['Numero Fechas'] = res
 print(df)
+print(df.mean())
 print(df.describe())
 con.close()
 
