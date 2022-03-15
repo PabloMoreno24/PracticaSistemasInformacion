@@ -1,6 +1,8 @@
 from flask import Flask
 import sqlite3
 import json
+import pandas as pd
+import numpy as np
 
 app = Flask(__name__)
 
@@ -34,6 +36,17 @@ for i in data2['usuarios']:
         con.commit()
 
 con.commit()
+
+df = pd.DataFrame()
+
+cursor_obj.execute('SELECT num_fechas FROM users')
+rows = cursor_obj.fetchall()
+res=[]
+for i in rows:
+    res+=[i[0]]
+df['Numero Fechas'] = res
+print(df)
+print(df.describe())
 con.close()
 
 @app.route('/')
