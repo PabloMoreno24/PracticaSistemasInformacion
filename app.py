@@ -5,29 +5,32 @@ import json
 app = Flask(__name__)
 
 f = open('legal.json')
+f2 = open('users.json')
 data = json.load(f)
+data2 = json.load(f2)
 
 
 con = sqlite3.connect('practica.db')
 cursor_obj = con.cursor()
 cursor_obj.execute("DROP TABLE legal")
 cursor_obj.execute("DROP TABLE users")
-cursor_obj.execute("CREATE TABLE IF NOT EXISTS legal (nombre,cookies,aviso,proteccion_de_datos,creacion, primary key(nombre))")
-cursor_obj.execute("CREATE TABLE IF NOT EXISTS users (id,nombre,telefono,password,provincia,permisos,total_emails,phishing_email,ciclados_email,fechas,num_fechas,ips,num_ips,primary key (id))")
-inser = """INSERT INTO legal (nombre,cookies,aviso,proteccion_de_datos,creacion) VALUES (?,?,?,?,?)"""
+cursor_obj.execute("CREATE TABLE IF NOT EXISTS legal (nombrel,cookies,aviso,proteccion_de_datos,creacion, primary key(nombrel))")
+cursor_obj.execute("CREATE TABLE IF NOT EXISTS users (nombre,telefono,password,provincia,permisos,total_emails,phishing_email,cliclados_email,fechas,num_fechas,ips,num_ips,primary key (nombre))")
+insert_legal = """INSERT INTO legal (nombrel,cookies,aviso,proteccion_de_datos,creacion) VALUES (?,?,?,?,?)"""
+insert_users = """INSERT INTO users (nombre,telefono,password,provincia,permisos,total_emails,phishing_email,cliclados_email,fechas,num_fechas,ips,num_ips) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)"""
 for i in data['legal']:
     for j in i.keys():
         for k in i.values():
-            datos = (j, k['cookies'], k['aviso'], k['proteccion_de_datos'], k['creacion'])
+            datos_legal = (j, k['cookies'], k['aviso'], k['proteccion_de_datos'], k['creacion'])
 
-        cursor_obj.execute(inser, datos)
+        cursor_obj.execute(insert_legal, datos_legal)
         con.commit()
 
-for i in data['users']:
+for i in data2['usuarios']:
     for j in i.keys():
         for k in i.values():
-            datos = (j, k['telefono'], k['contrasena'], k['provincia'], k['permisos'], k['emails']['total'], k['emails']['phising'], k['emails']['cliclados'], k['fechas'], len(k['fechas']), k['ips'], len(k['ips']))
-        cursor_obj.execute(inser, datos)
+            datos_users = (j, k['telefono'], k['contrasena'], k['provincia'], k['permisos'], k['emails']['total'], k['emails']['phishing'], k['emails']['cliclados'], k['fechas'], len(k['fechas']), k['ips'], len(k['ips']))
+        cursor_obj.execute(insert_users, datos_users)
         con.commit()
 
 con.commit()
