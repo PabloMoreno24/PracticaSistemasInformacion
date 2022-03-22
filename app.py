@@ -57,6 +57,7 @@ res=[]
 for i in rows:
     res+=[i[0]]
 df['Total Emails'] = res
+
 print(df)
 print(df.mean())
 print(df.describe())
