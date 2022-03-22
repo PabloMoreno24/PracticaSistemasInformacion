@@ -45,6 +45,18 @@ res=[]
 for i in rows:
     res+=[i[0]]
 df['Numero Fechas'] = res
+cursor_obj.execute('SELECT num_ips FROM users')
+rows = cursor_obj.fetchall()
+res=[]
+for i in rows:
+    res+=[i[0]]
+df['Numero IPS'] = res
+cursor_obj.execute('SELECT total_emails FROM users')
+rows = cursor_obj.fetchall()
+res=[]
+for i in rows:
+    res+=[i[0]]
+df['Total Emails'] = res
 print(df)
 print(df.mean())
 print(df.describe())
