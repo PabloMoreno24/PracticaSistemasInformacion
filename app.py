@@ -37,36 +37,97 @@ for i in data2['usuarios']:
 
 con.commit()
 
-df = pd.DataFrame()
+def ejercicioDos():
+    df = pd.DataFrame()
+    cursor_obj.execute('SELECT num_fechas FROM users')
+    rows = cursor_obj.fetchall()
+    res = []
+    for i in rows:
+        res += [i[0]]
+    df['Numero Fechas'] = res
 
-cursor_obj.execute('SELECT num_fechas FROM users')
-rows = cursor_obj.fetchall()
-res=[]
-for i in rows:
-    res+=[i[0]]
-df['Numero Fechas'] = res
+    cursor_obj.execute('SELECT num_ips FROM users')
+    rows = cursor_obj.fetchall()
+    res = []
+    for i in rows:
+        res += [i[0]]
+    df['Numero IPS'] = res
 
-cursor_obj.execute('SELECT num_ips FROM users')
-rows = cursor_obj.fetchall()
-res=[]
-for i in rows:
-    res+=[i[0]]
-df['Numero IPS'] = res
+    cursor_obj.execute('SELECT total_emails FROM users')
+    rows = cursor_obj.fetchall()
+    res = []
+    for i in rows:
+        res += [i[0]]
+    df['Total Emails'] = res
 
-cursor_obj.execute('SELECT total_emails FROM users')
-rows = cursor_obj.fetchall()
-res=[]
-for i in rows:
-    res+=[i[0]]
-df['Total Emails'] = res
-print(df)
-print(df.mean())
-print(df.describe())
+    print("Ejercicio 2\n-----------")
+    print(df.describe())
+    print("\n")
+
+def ejercicioTres():
+    df_usuarios = pd.DataFrame()
+    df_admins = pd.DataFrame()
+    df_menorDoscientos = pd.DataFrame()
+    df_mayorDoscientos = pd.DataFrame()
+
+    cursor_obj.execute('SELECT phishing_email FROM users where permisos="0"')
+    rows = cursor_obj.fetchall()
+    res = []
+    for i in rows:
+        res += [i[0]]
+    df_usuarios['Phishing Emails'] = res
+
+    cursor_obj.execute('SELECT phishing_email FROM users where permisos="1"')
+    rows = cursor_obj.fetchall()
+    res = []
+    for i in rows:
+        res += [i[0]]
+    df_admins['Phishing Emails'] = res
+
+    cursor_obj.execute('SELECT phishing_email FROM users where total_emails<200')
+    rows = cursor_obj.fetchall()
+    res = []
+    for i in rows:
+        res += [i[0]]
+    df_menorDoscientos['Phishing Emails'] = res
+
+    cursor_obj.execute('SELECT phishing_email FROM users where total_emails>=200')
+    rows = cursor_obj.fetchall()
+    res = []
+    for i in rows:
+        res += [i[0]]
+    df_mayorDoscientos['Phishing Emails'] = res
+
+    print("Ejercicio 3\n-----------")
+    print("Phishing Emails de Permisos Usuario\n-----------------------------------")
+    print(df_usuarios.describe())
+    num_missing = df_usuarios.isnull().sum()
+    print("Valores Missing de", num_missing)
+    print("\n")
+
+    print("Phishing Emails de Permisos Administrador\n-----------------------------------------")
+    print(df_admins.describe())
+    num_missing = df_admins.isnull().sum()
+    print("Valores Missing de", num_missing)
+    print("\n")
+
+    print("Phishing Emails de Personas con menos de 200 correos\n----------------------------------------------------")
+    print(df_menorDoscientos.describe())
+    num_missing = df_menorDoscientos.isnull().sum()
+    print("Valores Missing de", num_missing)
+    print("\n")
+
+    print("Phishing Emails de Personas con mas o igual de 200 correos\n----------------------------------------------------------")
+    print(df_mayorDoscientos.describe())
+    num_missing = df_mayorDoscientos.isnull().sum()
+    print("Valores Missing de", num_missing)
+    print("\n")
+
 con.close()
-
 @app.route('/')
 def hello_world():  # put application's code here
-    return 'Hello World!'
+
+    return 'Hello World|'
 
 
 if __name__ == '__main__':
