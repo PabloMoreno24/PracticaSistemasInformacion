@@ -191,6 +191,25 @@ def index():  # put application's code here
 
     return render_template('index.html')
 
+@app.route('/ejeruno')
+def ejerUno():
+
+    return render_template('ejer_uno.html')
+
+
+@app.route('/ejerdos')
+def ejerDos():
+    return render_template('ejer_dos.html')
+
+
+@app.route('/ejertres')
+def ejerTres():
+    return render_template('ejer_tres.html')
+
+
+@app.route('/ejercuatro')
+def ejerCuatro():
+    return render_template('ejer_cuatro.html')
 
 if __name__ == '__main__':
     app.run()
