@@ -1,3 +1,4 @@
+import plotly.utils
 from flask import Flask, render_template
 import sqlite3
 import json
@@ -126,8 +127,10 @@ def ejercicioTres():
     print(totalDF.describe())
     print(totalDF)
 
+df_legal = pd.DataFrame()
+df_privacidad = pd.DataFrame()
 def ejercicioCuatro():
-    df_legal = pd.DataFrame()
+
     cursor_obj.execute('SELECT nombrel,cookies,aviso,proteccion_de_datos FROM legal ORDER BY politicas')
     rows = cursor_obj.fetchall()
     nombre = []
@@ -145,7 +148,7 @@ def ejercicioCuatro():
     df_legal['Proteccion de Datos'] = proteccion_de_datos
 
 
-    df_privacidad = pd.DataFrame()
+
     cursor_obj.execute('SELECT DISTINCT creacion FROM legal ORDER BY creacion')
     rows = cursor_obj.fetchall()
     creacion = []
@@ -174,14 +177,15 @@ def ejercicioCuatro():
     print(df_privacidad)
 
 
-    fig = go.Figure(data=[
-        go.Bar(name='Se cumple', x=creacion, y=se_cumple,marker_color='steelblue'),
-        go.Bar(name='No se cumple', x=creacion, y=no_se_cumple,marker_color='lightsalmon')
-    ])
+#    fig = go.Figure(data=[
+#        go.Bar(name='Se cumple', x=creacion, y=se_cumple,marker_color='steelblue'),
+#        go.Bar(name='No se cumple', x=creacion, y=no_se_cumple,marker_color='lightsalmon')
+#    ])
     # Change the bar mode
-    fig.update_layout(title_text="Comparativa Privacidad segun el Año de Creación",title_font_size=41,barmode='stack')
-    fig.show()
+#    fig.update_layout(title_text="Comparativa Privacidad segun el Año de Creación",title_font_size=41,barmode='stack')
+#    fig.show()
 
+ejercicioCuatro()
 
 con.close()
 
@@ -210,6 +214,18 @@ def ejerTres():
 @app.route('/ejercuatro')
 def ejerCuatro():
     return render_template('ejer_cuatro.html')
+
+@app.route('/cuatroa')
+def cuatroA():
+    fig = go.Figure(data=[
+        go.Bar(name='Se cumple', x=df_privacidad['Creacion'], y=df_privacidad['se_cumple'], marker_color='steelblue'),
+        go.Bar(name='No se cumple', x=df_privacidad['Creacion'], y=df_privacidad['no_se_cumple'], marker_color='lightsalmon')
+    ])
+    # Change the bar mode
+    fig.update_layout(title_text="Comparativa Privacidad segun el Año de Creación", title_font_size=41, barmode='stack')
+    a = plotly.utils.PlotlyJSONEncoder
+    graphJSON = json.dumps(fig, cls=a)
+    return render_template('cuatroApartados.html', graphJSON=graphJSON)
 
 if __name__ == '__main__':
     app.run()
