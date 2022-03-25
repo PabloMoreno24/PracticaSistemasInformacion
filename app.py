@@ -183,7 +183,6 @@ def ejercicioCuatro():
     fig.show()
 
 
-ejercicioCuatro()
 con.close()
 
 @app.route('/')
