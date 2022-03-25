@@ -3,6 +3,7 @@ import sqlite3
 import json
 import pandas as pd
 import numpy as np
+import plotly.graph_objects as go
 
 app = Flask(__name__)
 
@@ -11,20 +12,18 @@ f2 = open('users.json')
 data = json.load(f)
 data2 = json.load(f2)
 
-
 con = sqlite3.connect('practica.db')
 cursor_obj = con.cursor()
 cursor_obj.execute("DROP TABLE legal")
 cursor_obj.execute("DROP TABLE users")
-cursor_obj.execute("CREATE TABLE IF NOT EXISTS legal (nombrel,cookies,aviso,proteccion_de_datos,creacion, primary key(nombrel))")
+cursor_obj.execute("CREATE TABLE IF NOT EXISTS legal (nombrel,cookies,aviso,proteccion_de_datos,politicas,creacion,primary key(nombrel))")
 cursor_obj.execute("CREATE TABLE IF NOT EXISTS users (nombre,telefono,password,provincia,permisos,total_emails,phishing_email,cliclados_email,fechas,num_fechas,ips,num_ips,primary key (nombre))")
-insert_legal = """INSERT INTO legal (nombrel,cookies,aviso,proteccion_de_datos,creacion) VALUES (?,?,?,?,?)"""
+insert_legal = """INSERT INTO legal (nombrel,cookies,aviso,proteccion_de_datos,politicas,creacion) VALUES (?,?,?,?,?,?)"""
 insert_users = """INSERT INTO users (nombre,telefono,password,provincia,permisos,total_emails,phishing_email,cliclados_email,fechas,num_fechas,ips,num_ips) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)"""
 for i in data['legal']:
     for j in i.keys():
         for k in i.values():
-            datos_legal = (j, k['cookies'], k['aviso'], k['proteccion_de_datos'], k['creacion'])
-
+            datos_legal = (j, k['cookies'], k['aviso'], k['proteccion_de_datos'], k['cookies'] + k['aviso'] + k['proteccion_de_datos'],k['creacion'])
         cursor_obj.execute(insert_legal, datos_legal)
         con.commit()
 
@@ -75,28 +74,28 @@ def ejercicioTres():
     res = []
     for i in rows:
         res += [i[0]]
-    df_usuarios['Phishing Emails'] = res
+    df_usuarios['Phishing Emails Permisos Usuario'] = res
 
     cursor_obj.execute('SELECT phishing_email FROM users where permisos="1"')
     rows = cursor_obj.fetchall()
     res = []
     for i in rows:
         res += [i[0]]
-    df_admins['Phishing Emails'] = res
+    df_admins['Phishing Emails Permisos Admin'] = res
 
     cursor_obj.execute('SELECT phishing_email FROM users where total_emails<200')
     rows = cursor_obj.fetchall()
     res = []
     for i in rows:
         res += [i[0]]
-    df_menorDoscientos['Phishing Emails'] = res
+    df_menorDoscientos['Phishing Emails De Gente con < 200 correos'] = res
 
     cursor_obj.execute('SELECT phishing_email FROM users where total_emails>=200')
     rows = cursor_obj.fetchall()
     res = []
     for i in rows:
         res += [i[0]]
-    df_mayorDoscientos['Phishing Emails'] = res
+    df_mayorDoscientos['Phishing Emails de Gente >= 200 correos'] = res
 
     print("Ejercicio 3\n-----------")
     print("Phishing Emails de Permisos Usuario\n-----------------------------------")
@@ -123,11 +122,75 @@ def ejercicioTres():
     print("Valores Missing de", num_missing)
     print("\n")
 
+    totalDF = pd.concat([df_admins,df_usuarios,df_mayorDoscientos,df_menorDoscientos],axis = 1)
+    print(totalDF.describe())
+    print(totalDF)
+
+def ejercicioCuatro():
+    df_legal = pd.DataFrame()
+    cursor_obj.execute('SELECT nombrel,cookies,aviso,proteccion_de_datos FROM legal ORDER BY politicas')
+    rows = cursor_obj.fetchall()
+    nombre = []
+    cookies = []
+    avisos = []
+    proteccion_de_datos = []
+    for i in range(0,5):
+        nombre += [rows[i][0]]
+        cookies += [rows[i][1]]
+        avisos += [rows[i][2]]
+        proteccion_de_datos += [rows[i][3]]
+    df_legal['Nombre'] = nombre
+    df_legal['Cookies'] = cookies
+    df_legal['Avisos'] = avisos
+    df_legal['Proteccion de Datos'] = proteccion_de_datos
+
+
+    df_privacidad = pd.DataFrame()
+    cursor_obj.execute('SELECT DISTINCT creacion FROM legal ORDER BY creacion')
+    rows = cursor_obj.fetchall()
+    creacion = []
+    for i in range(len(rows)):
+        creacion += [rows[i][0]]
+    df_privacidad['Creacion'] = creacion
+
+    cursor_obj.execute('SELECT creacion,proteccion_de_datos FROM legal where proteccion_de_datos=1 ORDER BY creacion')
+    rows = cursor_obj.fetchall()
+    se_cumple = [0]*len(creacion)
+    for i in range(len(creacion)):
+        for j in range(len(rows)):
+            if rows[j][0] == creacion[i]:
+                se_cumple[i] = 1 + se_cumple[i]
+    df_privacidad['Se cumple'] = se_cumple
+
+    cursor_obj.execute('SELECT creacion,proteccion_de_datos FROM legal where proteccion_de_datos=0 ORDER BY creacion')
+    rows = cursor_obj.fetchall()
+    print(rows)
+    no_se_cumple = [0] * len(creacion)
+    for i in range(len(creacion)):
+        for j in range(len(rows)):
+            if rows[j][0] == creacion[i]:
+                no_se_cumple[i] = 1 + no_se_cumple[i]
+    df_privacidad['No se cumple'] = no_se_cumple
+
+    print(df_privacidad)
+
+
+    fig = go.Figure(data=[
+        go.Bar(name='Se cumple', x=creacion, y=se_cumple),
+        go.Bar(name='No se cumple', x=creacion, y=no_se_cumple)
+    ])
+    # Change the bar mode
+    fig.update_layout()
+    fig.show()
+
+
+ejercicioCuatro()
 con.close()
+
 @app.route('/')
 def hello_world():  # put application's code here
 
-    return 'Hello World|'
+    return 'Hello World'
 
 
 if __name__ == '__main__':
