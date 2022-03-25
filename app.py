@@ -186,7 +186,7 @@ def ejercicioCuatro():
 #    fig.show()
 
 ejercicioCuatro()
-
+ejercicioDos()
 con.close()
 
 @app.route('/')
@@ -218,8 +218,8 @@ def ejerCuatro():
 @app.route('/cuatroa')
 def cuatroA():
     fig = go.Figure(data=[
-        go.Bar(name='Se cumple', x=df_privacidad['Creacion'], y=df_privacidad['se_cumple'], marker_color='steelblue'),
-        go.Bar(name='No se cumple', x=df_privacidad['Creacion'], y=df_privacidad['no_se_cumple'], marker_color='lightsalmon')
+        go.Bar(name='Se cumple', x=df_privacidad['Creacion'], y=df_privacidad['Se cumple'], marker_color='steelblue'),
+        go.Bar(name='No se cumple', x=df_privacidad['Creacion'], y=df_privacidad['No se cumple'], marker_color='lightsalmon')
     ])
     # Change the bar mode
     fig.update_layout(title_text="Comparativa Privacidad segun el Año de Creación", title_font_size=41, barmode='stack')
