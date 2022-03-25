@@ -180,7 +180,7 @@ def ejercicioCuatro():
         go.Bar(name='No se cumple', x=creacion, y=no_se_cumple)
     ])
     # Change the bar mode
-    fig.update_layout()
+    fig.update_layout(barmode='stack')
     fig.show()
 
 
