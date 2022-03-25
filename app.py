@@ -36,9 +36,8 @@ for i in data2['usuarios']:
         con.commit()
 
 con.commit()
-
+df = pd.DataFrame()
 def ejercicioDos():
-    df = pd.DataFrame()
     cursor_obj.execute('SELECT num_fechas FROM users')
     rows = cursor_obj.fetchall()
     res = []
@@ -64,11 +63,12 @@ def ejercicioDos():
     print(df.describe())
     print("\n")
 
+df_usuarios = pd.DataFrame()
+df_admins = pd.DataFrame()
+df_menorDoscientos = pd.DataFrame()
+df_mayorDoscientos = pd.DataFrame()
 def ejercicioTres():
-    df_usuarios = pd.DataFrame()
-    df_admins = pd.DataFrame()
-    df_menorDoscientos = pd.DataFrame()
-    df_mayorDoscientos = pd.DataFrame()
+
 
     cursor_obj.execute('SELECT phishing_email FROM users where permisos="0"')
     rows = cursor_obj.fetchall()
@@ -124,9 +124,20 @@ def ejercicioTres():
     print("\n")
 
     totalDF = pd.concat([df_admins,df_usuarios,df_mayorDoscientos,df_menorDoscientos],axis = 1)
-    print(totalDF.describe())
-    print(totalDF)
+    print("Numero de Observaciones\n")
+    print(totalDF.count())
+    print("Medianas\n")
+    print(totalDF.median())
+    print("Medias\n")
+    print(totalDF.mean())
+    print("Desviaciones\n")
+    print(totalDF.std())
+    print("Maximos\n")
+    print(totalDF.max())
+    print("Minimos\n")
+    print(totalDF.min())
 
+ejercicioTres()
 df_legal = pd.DataFrame()
 df_privacidad = pd.DataFrame()
 def ejercicioCuatro():
@@ -185,8 +196,6 @@ def ejercicioCuatro():
 #    fig.update_layout(title_text="Comparativa Privacidad segun el Año de Creación",title_font_size=41,barmode='stack')
 #    fig.show()
 
-ejercicioCuatro()
-ejercicioDos()
 con.close()
 
 @app.route('/')
