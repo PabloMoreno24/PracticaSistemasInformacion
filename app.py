@@ -171,7 +171,6 @@ def ejercicioCuatro():
             if rows[j][0] == creacion[i]:
                 no_se_cumple[i] = 1 + no_se_cumple[i]
     df_privacidad['No se cumple'] = no_se_cumple
-
     print(df_privacidad)
 
 
