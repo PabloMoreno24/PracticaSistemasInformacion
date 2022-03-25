@@ -176,11 +176,11 @@ def ejercicioCuatro():
 
 
     fig = go.Figure(data=[
-        go.Bar(name='Se cumple', x=creacion, y=se_cumple),
-        go.Bar(name='No se cumple', x=creacion, y=no_se_cumple)
+        go.Bar(name='Se cumple', x=creacion, y=se_cumple,marker_color='steelblue'),
+        go.Bar(name='No se cumple', x=creacion, y=no_se_cumple,marker_color='lightsalmon')
     ])
     # Change the bar mode
-    fig.update_layout(barmode='stack')
+    fig.update_layout(title_text="Comparativa Privacidad segun el Año de Creación",title_font_size=41,barmode='stack')
     fig.show()
 
 
