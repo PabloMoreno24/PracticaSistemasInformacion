@@ -32,9 +32,10 @@ def comprobarPassword(password):
             elif guess != md5hash:
                 continue
             else:
-                return 0
+                return 2
+        return 2
     except Exception as exc:
-        return 0
+        return 2
 
 def probabilidadClick(cliclados,total):
     if (total!=0):
@@ -171,6 +172,8 @@ ejercicioTres()
 df_legal = pd.DataFrame()
 df_privacidad = pd.DataFrame()
 df_vulnerable = pd.DataFrame()
+df_conexiones = pd.DataFrame()
+df_critico = pd.DataFrame()
 def ejercicioCuatro():
 
     cursor_obj.execute('SELECT nombrel,cookies,aviso,proteccion_de_datos FROM legal ORDER BY politicas')
@@ -233,6 +236,38 @@ def ejercicioCuatro():
     df_vulnerable['No Comprometidas'] = res
     print(df_vulnerable)
 
+    cursor_obj.execute('SELECT AVG (num_ips) FROM users where passVul=1')
+    rows = cursor_obj.fetchall()
+    res = []
+    for i in rows:
+        res += [i[0]]
+    df_conexiones['Vulnerables'] = res
+
+    cursor_obj.execute('SELECT AVG(num_ips) FROM users where passVul=2')
+    rows = cursor_obj.fetchall()
+    res = []
+    for i in rows:
+        res += [i[0]]
+    df_conexiones['No Vulnerables'] = res
+
+    print(df_conexiones)
+
+    cursor_obj.execute('SELECT nombre FROM users where passVul=1 ORDER BY probabilidad_click DESC')
+    rows = cursor_obj.fetchall()
+    res = []
+    for i in range(0,10):
+        res += [rows[i][0]]
+    df_critico['Nombre'] = res
+
+    cursor_obj.execute('SELECT probabilidad_click FROM users where passVul=1 ORDER BY probabilidad_click DESC')
+    rows = cursor_obj.fetchall()
+    res = []
+    for i in range(0, 10):
+        res += [rows[i][0]]
+    df_critico['Probabilidad de Click'] = res
+
+    print(df_critico)
+
 
 
 
@@ -281,6 +316,13 @@ def ejerTres():
 def ejerCuatro():
     return render_template('ejer_cuatro.html')
 
+@app.route('/cuatroa')
+def cuatroA():
+    fig = px.bar(df_critico, x=df_critico['Nombre'], y=df_critico['Probabilidad de Click'])
+    a = plotly.utils.PlotlyJSONEncoder
+    graphJSON = json.dumps(fig, cls=a)
+    return render_template('cuatroApartados.html', graphJSON=graphJSON)
+
 @app.route('/cuatrob')
 def cuatroB():
     fig = go.Figure(data=[
@@ -290,6 +332,16 @@ def cuatroB():
     ])
     # Change the bar mode
     fig.update_layout(title_text="Cinco Peores", title_font_size=41, barmode='group')
+    a = plotly.utils.PlotlyJSONEncoder
+    graphJSON = json.dumps(fig, cls=a)
+    return render_template('cuatroApartados.html', graphJSON=graphJSON)
+
+@app.route('/cuatroc')
+def cuatroC():
+    labels = ['Vulnerables', 'No Vulnerables']
+    values = [df_conexiones.at[0, 'Vulnerables'], df_conexiones.at[0, 'No Vulnerables']]
+    fig = go.Figure(data=[
+        go.Pie(labels=labels, values=values)])
     a = plotly.utils.PlotlyJSONEncoder
     graphJSON = json.dumps(fig, cls=a)
     return render_template('cuatroApartados.html', graphJSON=graphJSON)
