@@ -8,7 +8,7 @@ import plotly.graph_objects as go
 import plotly.express as px
 from urllib.request import urlopen
 import hashlib
-from termcolor import colored
+
 
 app = Flask(__name__)
 
@@ -18,6 +18,7 @@ data = json.load(f)
 data2 = json.load(f2)
 
 def comprobarPassword(password):
+    print("Comprobando ",password)
     md5hash = password
     try:
         password_list = str(urlopen(
@@ -35,15 +36,20 @@ def comprobarPassword(password):
     except Exception as exc:
         return 0
 
+def probabilidadClick(cliclados,total):
+    if (total!=0):
+        return (cliclados/total) * 100
+    else:
+        return 0
 
 con = sqlite3.connect('practica.db')
 cursor_obj = con.cursor()
 cursor_obj.execute("DROP TABLE legal")
 cursor_obj.execute("DROP TABLE users")
 cursor_obj.execute("CREATE TABLE IF NOT EXISTS legal (nombrel,cookies,aviso,proteccion_de_datos,politicas,creacion,primary key(nombrel))")
-cursor_obj.execute("CREATE TABLE IF NOT EXISTS users (nombre,telefono,password,provincia,permisos,total_emails,phishing_email,cliclados_email,fechas,num_fechas,ips,num_ips,primary key (nombre))")
+cursor_obj.execute("CREATE TABLE IF NOT EXISTS users (nombre,telefono,password,provincia,permisos,total_emails,phishing_email,cliclados_email,probabilidad_click,fechas,num_fechas,ips,num_ips,passVul,primary key (nombre))")
 insert_legal = """INSERT INTO legal (nombrel,cookies,aviso,proteccion_de_datos,politicas,creacion) VALUES (?,?,?,?,?,?)"""
-insert_users = """INSERT INTO users (nombre,telefono,password,provincia,permisos,total_emails,phishing_email,cliclados_email,fechas,num_fechas,ips,num_ips,passVul) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)"""
+insert_users = """INSERT INTO users (nombre,telefono,password,provincia,permisos,total_emails,phishing_email,cliclados_email,probabilidad_click,fechas,num_fechas,ips,num_ips,passVul) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)"""
 for i in data['legal']:
     for j in i.keys():
         for k in i.values():
@@ -54,7 +60,7 @@ for i in data['legal']:
 for i in data2['usuarios']:
     for j in i.keys():
         for k in i.values():
-            datos_users = (j, k['telefono'], k['contrasena'], k['provincia'], k['permisos'], k['emails']['total'], k['emails']['phishing'], k['emails']['cliclados'], str(k['fechas']), len(k['fechas']), str(k['ips']), len(k['ips']), comprobarPassword(k['contrasena']))
+            datos_users = (j, k['telefono'], k['contrasena'], k['provincia'], k['permisos'], k['emails']['total'], k['emails']['phishing'], k['emails']['cliclados'],probabilidadClick(k['emails']['cliclados'],k['emails']['phishing']), str(k['fechas']), len(k['fechas']), str(k['ips']), len(k['ips']), comprobarPassword(k['contrasena']))
         cursor_obj.execute(insert_users, datos_users)
         con.commit()
 
@@ -164,6 +170,7 @@ def ejercicioTres():
 ejercicioTres()
 df_legal = pd.DataFrame()
 df_privacidad = pd.DataFrame()
+df_vulnerable = pd.DataFrame()
 def ejercicioCuatro():
 
     cursor_obj.execute('SELECT nombrel,cookies,aviso,proteccion_de_datos FROM legal ORDER BY politicas')
@@ -210,6 +217,24 @@ def ejercicioCuatro():
                 no_se_cumple[i] = 1 + no_se_cumple[i]
     df_privacidad['No se cumple'] = no_se_cumple
     print(df_privacidad)
+
+    cursor_obj.execute('SELECT COUNT(num_ips) FROM users where num_ips>=10')
+    rows = cursor_obj.fetchall()
+    res = []
+    for i in rows:
+        res += [i[0]]
+    df_vulnerable['Comprometidas'] = res
+
+    cursor_obj.execute('SELECT COUNT(num_ips) FROM users where num_ips<10')
+    rows = cursor_obj.fetchall()
+    res = []
+    for i in rows:
+        res += [i[0]]
+    df_vulnerable['No Comprometidas'] = res
+    print(df_vulnerable)
+
+
+
 
 
 ejercicioDos()
@@ -277,6 +302,16 @@ def cuatroD():
     ])
     # Change the bar mode
     fig.update_layout(title_text="Comparativa Privacidad segun el Año de Creación", title_font_size=41, barmode='stack')
+    a = plotly.utils.PlotlyJSONEncoder
+    graphJSON = json.dumps(fig, cls=a)
+    return render_template('cuatroApartados.html', graphJSON=graphJSON)
+
+@app.route('/cuatroe')
+def cuatroE():
+    labels = ['No Comprometidas', 'Comprometidas']
+    values = [df_vulnerable.at[0, 'No Comprometidas'], df_vulnerable.at[0, 'Comprometidas']]
+    fig = go.Figure(data=[
+        go.Pie(labels=labels, values=values)])
     a = plotly.utils.PlotlyJSONEncoder
     graphJSON = json.dumps(fig, cls=a)
     return render_template('cuatroApartados.html', graphJSON=graphJSON)
