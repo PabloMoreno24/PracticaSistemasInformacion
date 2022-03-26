@@ -5,6 +5,7 @@ import json
 import pandas as pd
 import numpy as np
 import plotly.graph_objects as go
+import plotly.express as px
 
 app = Flask(__name__)
 
@@ -187,14 +188,11 @@ def ejercicioCuatro():
     df_privacidad['No se cumple'] = no_se_cumple
     print(df_privacidad)
 
-
-#    fig = go.Figure(data=[
-#        go.Bar(name='Se cumple', x=creacion, y=se_cumple,marker_color='steelblue'),
-#        go.Bar(name='No se cumple', x=creacion, y=no_se_cumple,marker_color='lightsalmon')
-#    ])
-    # Change the bar mode
-#    fig.update_layout(title_text="Comparativa Privacidad segun el Año de Creación",title_font_size=41,barmode='stack')
-#    fig.show()
+df = px.data.tips()
+fig = px.histogram(df_legal, x="nombre, y="total_bill",
+             color='smoker', barmode='group',
+             height=400)
+fig.show()
 
 con.close()
 
@@ -224,8 +222,8 @@ def ejerTres():
 def ejerCuatro():
     return render_template('ejer_cuatro.html')
 
-@app.route('/cuatroa')
-def cuatroA():
+@app.route('/cuatrod')
+def cuatroD():
     fig = go.Figure(data=[
         go.Bar(name='Se cumple', x=df_privacidad['Creacion'], y=df_privacidad['Se cumple'], marker_color='steelblue'),
         go.Bar(name='No se cumple', x=df_privacidad['Creacion'], y=df_privacidad['No se cumple'], marker_color='lightsalmon')
