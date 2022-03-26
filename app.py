@@ -6,6 +6,9 @@ import pandas as pd
 import numpy as np
 import plotly.graph_objects as go
 import plotly.express as px
+from urllib.request import urlopen
+import hashlib
+from termcolor import colored
 
 app = Flask(__name__)
 
@@ -14,6 +17,25 @@ f2 = open('users.json')
 data = json.load(f)
 data2 = json.load(f2)
 
+def comprobarPassword(password):
+    md5hash = password
+    try:
+        password_list = str(urlopen(
+            "https://raw.githubusercontent.com/danielmiessler/SecLists/master/Passwords/Common-Credentials/10-million-password-list-top-1000000.txt").read(),
+                            'utf-8')
+        for password in password_list.split('\n'):
+            guess = hashlib.md5(bytes(password, 'utf-8')).hexdigest()
+            if guess == md5hash:
+                return 1
+                break
+            elif guess != md5hash:
+                continue
+            else:
+                return 0
+    except Exception as exc:
+        return 0
+
+
 con = sqlite3.connect('practica.db')
 cursor_obj = con.cursor()
 cursor_obj.execute("DROP TABLE legal")
@@ -21,7 +43,7 @@ cursor_obj.execute("DROP TABLE users")
 cursor_obj.execute("CREATE TABLE IF NOT EXISTS legal (nombrel,cookies,aviso,proteccion_de_datos,politicas,creacion,primary key(nombrel))")
 cursor_obj.execute("CREATE TABLE IF NOT EXISTS users (nombre,telefono,password,provincia,permisos,total_emails,phishing_email,cliclados_email,fechas,num_fechas,ips,num_ips,primary key (nombre))")
 insert_legal = """INSERT INTO legal (nombrel,cookies,aviso,proteccion_de_datos,politicas,creacion) VALUES (?,?,?,?,?,?)"""
-insert_users = """INSERT INTO users (nombre,telefono,password,provincia,permisos,total_emails,phishing_email,cliclados_email,fechas,num_fechas,ips,num_ips) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)"""
+insert_users = """INSERT INTO users (nombre,telefono,password,provincia,permisos,total_emails,phishing_email,cliclados_email,fechas,num_fechas,ips,num_ips,passVul) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)"""
 for i in data['legal']:
     for j in i.keys():
         for k in i.values():
@@ -32,7 +54,7 @@ for i in data['legal']:
 for i in data2['usuarios']:
     for j in i.keys():
         for k in i.values():
-            datos_users = (j, k['telefono'], k['contrasena'], k['provincia'], k['permisos'], k['emails']['total'], k['emails']['phishing'], k['emails']['cliclados'], str(k['fechas']), len(k['fechas']), str(k['ips']), len(k['ips']))
+            datos_users = (j, k['telefono'], k['contrasena'], k['provincia'], k['permisos'], k['emails']['total'], k['emails']['phishing'], k['emails']['cliclados'], str(k['fechas']), len(k['fechas']), str(k['ips']), len(k['ips']), comprobarPassword(k['contrasena']))
         cursor_obj.execute(insert_users, datos_users)
         con.commit()
 
