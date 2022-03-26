@@ -192,6 +192,7 @@ df = px.data.tips()
 fig = px.histogram(df_legal, x="nombre, y="total_bill",
              color='smoker', barmode='group',
              height=400)
+
 fig.show()
 
 con.close()
