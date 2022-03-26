@@ -68,6 +68,7 @@ df_usuarios = pd.DataFrame()
 df_admins = pd.DataFrame()
 df_menorDoscientos = pd.DataFrame()
 df_mayorDoscientos = pd.DataFrame()
+totalDF = pd.DataFrame()
 def ejercicioTres():
 
 
@@ -215,7 +216,18 @@ def ejerDos():
 
 @app.route('/ejertres')
 def ejerTres():
-    return render_template('ejer_tres.html')
+    observaciones = totalDF.count()
+
+    mediana = totalDF.median()
+
+    media = totalDF.mean()
+
+    varianza = totalDF.std()
+
+    max = totalDF.max()
+
+    min = totalDF.min()
+    return render_template('ejer_tres.html', observaciones=observaciones, mediana=mediana, media=media, varianza=varianza, max=max, min=min)
 
 
 @app.route('/ejercuatro')
