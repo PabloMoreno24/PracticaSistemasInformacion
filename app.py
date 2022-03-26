@@ -188,17 +188,11 @@ def ejercicioCuatro():
     df_privacidad['No se cumple'] = no_se_cumple
     print(df_privacidad)
 
+
+ejercicioDos()
+ejercicioTres()
 ejercicioCuatro()
-fig = go.Figure(data=[
-    go.Bar(name='Cookies', x=df_legal['Nombre'], y=df_legal['Cookies'], marker_color='steelblue'),
-    go.Bar(name='Avisos', x=df_legal['Nombre'], y=df_legal['Avisos'], marker_color='lightsalmon'),
-go.Bar(name='Proteccion de datos', x=df_legal['Nombre'], y=df_legal['Proteccion de Datos'], marker_color='red')
-])
-# Change the bar mode
-fig.update_layout(title_text="Cinco Peores", title_font_size=41, barmode='group')
 
-
-fig.show()
 
 con.close()
 
@@ -227,6 +221,19 @@ def ejerTres():
 @app.route('/ejercuatro')
 def ejerCuatro():
     return render_template('ejer_cuatro.html')
+
+@app.route('/cuatrob')
+def cuatroB():
+    fig = go.Figure(data=[
+        go.Bar(name='Cookies', x=df_legal['Nombre'], y=df_legal['Cookies'], marker_color='steelblue'),
+        go.Bar(name='Avisos', x=df_legal['Nombre'], y=df_legal['Avisos'], marker_color='lightsalmon'),
+        go.Bar(name='Proteccion de datos', x=df_legal['Nombre'], y=df_legal['Proteccion de Datos'], marker_color='red')
+    ])
+    # Change the bar mode
+    fig.update_layout(title_text="Cinco Peores", title_font_size=41, barmode='group')
+    a = plotly.utils.PlotlyJSONEncoder
+    graphJSON = json.dumps(fig, cls=a)
+    return render_template('cuatroApartados.html', graphJSON=graphJSON)
 
 @app.route('/cuatrod')
 def cuatroD():
