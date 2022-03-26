@@ -188,16 +188,15 @@ def ejercicioCuatro():
     df_privacidad['No se cumple'] = no_se_cumple
     print(df_privacidad)
 
-
+ejercicioCuatro()
 fig = go.Figure(data=[
     go.Bar(name='Cookies', x=df_legal['Nombre'], y=df_legal['Cookies'], marker_color='steelblue'),
     go.Bar(name='Avisos', x=df_legal['Nombre'], y=df_legal['Avisos'], marker_color='lightsalmon'),
-    go.Bar(name='Proteccion de datos', x=df_legal['Nombre'], y=df_legal['Proteccion de Datos'], marker_color='red'),
+go.Bar(name='Proteccion de datos', x=df_legal['Nombre'], y=df_legal['Proteccion de Datos'], marker_color='red')
 ])
 # Change the bar mode
-fig.update_layout(title_text="Cinco Peores", title_font_size=41, barmode='stack')
-a = plotly.utils.PlotlyJSONEncoder
-graphJSON = json.dumps(fig, cls=a)
+fig.update_layout(title_text="Cinco Peores", title_font_size=41, barmode='group')
+
 
 fig.show()
 
