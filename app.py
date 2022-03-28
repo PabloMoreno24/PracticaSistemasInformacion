@@ -182,7 +182,7 @@ def ejercicioTres():
     print("Minimos\n---------------------------------------")
     print(totalDF.min(),"\n")
 
-ejercicioTres()
+
 df_legal = pd.DataFrame()
 df_privacidad = pd.DataFrame()
 df_vulnerable = pd.DataFrame()
@@ -227,14 +227,13 @@ def ejercicioCuatro():
 
     cursor_obj.execute('SELECT creacion,proteccion_de_datos FROM legal where proteccion_de_datos=0 ORDER BY creacion')
     rows = cursor_obj.fetchall()
-    print(rows)
     no_se_cumple = [0] * len(creacion)
     for i in range(len(creacion)):
         for j in range(len(rows)):
             if rows[j][0] == creacion[i]:
                 no_se_cumple[i] = 1 + no_se_cumple[i]
     df_privacidad['No se cumple'] = no_se_cumple
-    print(df_privacidad)
+
 
     cursor_obj.execute('SELECT COUNT(num_ips) FROM users where num_ips>=10')
     rows = cursor_obj.fetchall()
@@ -249,7 +248,7 @@ def ejercicioCuatro():
     for i in rows:
         res += [i[0]]
     df_vulnerable['No Comprometidas'] = res
-    print(df_vulnerable)
+
 
     cursor_obj.execute('SELECT AVG (num_ips) FROM users where passVul=1')
     rows = cursor_obj.fetchall()
@@ -265,8 +264,6 @@ def ejercicioCuatro():
         res += [i[0]]
     df_conexiones['No Vulnerables'] = res
 
-    print(df_conexiones)
-
     cursor_obj.execute('SELECT nombre FROM users where passVul=1 ORDER BY probabilidad_click DESC')
     rows = cursor_obj.fetchall()
     res = []
@@ -281,10 +278,10 @@ def ejercicioCuatro():
         res += [rows[i][0]]
     df_critico['Probabilidad de Click'] = res
 
-    print(df_critico)
 
-
+ejercicioDos()
 ejercicioTres()
+ejercicioCuatro()
 
 con.close()
 
@@ -309,6 +306,8 @@ def ejerDos():
 def ejerTres():
     observaciones = totalDF.count()
 
+    missing = totalDF.isna().sum()
+
     mediana = totalDF.median()
 
     media = totalDF.mean()
@@ -318,7 +317,7 @@ def ejerTres():
     max = totalDF.max()
 
     min = totalDF.min()
-    return render_template('ejer_tres.html', observaciones=observaciones, mediana=mediana, media=media, varianza=varianza, max=max, min=min)
+    return render_template('ejer_tres.html', observaciones=observaciones, missing=missing, mediana=mediana, media=media, varianza=varianza, max=max, min=min)
 
 
 @app.route('/ejercuatro')
