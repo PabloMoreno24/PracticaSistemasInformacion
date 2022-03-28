@@ -89,9 +89,17 @@ def ejercicioDos():
         res += [i[0]]
     df['Total Emails'] = res
 
-    print("Ejercicio 2\n-----------")
-    print(df.describe())
+    print("Ejercicio 2\n-----------\n")
+    print("Numero de Observaciones\n-----------")
+    print(df.count(),"\n")
+    print("Media y Desviación Estandar\n-----------")
+    print("Medias\n",df.mean(),"\n")
+    print("Desviaciones\n",df.std(),"\n")
+    print("Maximo y Minimo de Total Fechas\n-----------")
+    print("Maximo",df['Numero Fechas'].max())
+    print("Minimo",df['Numero Fechas'].min())
     print("\n")
+
 
 df_usuarios = pd.DataFrame()
 df_admins = pd.DataFrame()
@@ -132,41 +140,47 @@ def ejercicioTres():
     print("Ejercicio 3\n-----------")
     print("Phishing Emails de Permisos Usuario\n-----------------------------------")
     print(df_usuarios.describe())
-    num_missing = df_usuarios.isnull().sum()
+    print(df_usuarios)
+    num_missing = df_usuarios.isna().sum()
     print("Valores Missing de", num_missing)
     print("\n")
 
     print("Phishing Emails de Permisos Administrador\n-----------------------------------------")
     print(df_admins.describe())
-    num_missing = df_admins.isnull().sum()
+    print(df_admins)
+    num_missing = df_admins.isna().sum()
     print("Valores Missing de", num_missing)
     print("\n")
 
     print("Phishing Emails de Personas con menos de 200 correos\n----------------------------------------------------")
     print(df_menorDoscientos.describe())
-    num_missing = df_menorDoscientos.isnull().sum()
+    print(df_menorDoscientos)
+    num_missing = df_menorDoscientos.isna().sum()
     print("Valores Missing de", num_missing)
     print("\n")
 
     print("Phishing Emails de Personas con mas o igual de 200 correos\n----------------------------------------------------------")
+    print(df_mayorDoscientos)
     print(df_mayorDoscientos.describe())
-    num_missing = df_mayorDoscientos.isnull().sum()
+    num_missing = df_mayorDoscientos.isna().sum()
     print("Valores Missing de", num_missing)
     print("\n")
 
     totalDF = pd.concat([df_admins,df_usuarios,df_mayorDoscientos,df_menorDoscientos],axis = 1)
-    print("Numero de Observaciones\n")
-    print(totalDF.count())
-    print("Medianas\n")
-    print(totalDF.median())
-    print("Medias\n")
-    print(totalDF.mean())
-    print("Desviaciones\n")
-    print(totalDF.std())
-    print("Maximos\n")
-    print(totalDF.max())
-    print("Minimos\n")
-    print(totalDF.min())
+    print("Numero de Observaciones\n------------------------------")
+    print(totalDF.count(),"\n")
+    print("Numero de valores Missing\n----------------------------")
+    print(totalDF.isna().sum(),"\n")
+    print("Medianas\n----------------------------")
+    print(totalDF.median(),"\n")
+    print("Medias\n---------------------------")
+    print(totalDF.mean(),"\n")
+    print("Desviaciones\n-------------------------------")
+    print(totalDF.std(),"\n")
+    print("Maximos\n-------------------------------")
+    print(totalDF.max(),"\n")
+    print("Minimos\n---------------------------------------")
+    print(totalDF.min(),"\n")
 
 ejercicioTres()
 df_legal = pd.DataFrame()
@@ -174,6 +188,7 @@ df_privacidad = pd.DataFrame()
 df_vulnerable = pd.DataFrame()
 df_conexiones = pd.DataFrame()
 df_critico = pd.DataFrame()
+
 def ejercicioCuatro():
 
     cursor_obj.execute('SELECT nombrel,cookies,aviso,proteccion_de_datos FROM legal ORDER BY politicas')
@@ -269,13 +284,7 @@ def ejercicioCuatro():
     print(df_critico)
 
 
-
-
-
-ejercicioDos()
 ejercicioTres()
-ejercicioCuatro()
-
 
 con.close()
 
