@@ -115,7 +115,6 @@ def ejercicioTres():
     for i in rows:
         res += [i[0]]
     df_usuarios['Phishing Emails Permisos Usuario'] = res
-
     cursor_obj.execute('SELECT phishing_email FROM users where permisos="1"')
     rows = cursor_obj.fetchall()
     res = []
