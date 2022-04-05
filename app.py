@@ -289,15 +289,23 @@ def index():  # put application's code here
 
     return render_template('index.html')
 
-@app.route('/ejeruno')
+@app.route('/Casa.html')
+def Casa():  # put application's code here
+
+    return render_template('index.html')
+
+
+@app.route('/TopUsuariosCriticos.html')
 def ejerUno():
+    fig = px.bar(df_critico, x=df_critico['Nombre'], y=df_critico['Probabilidad de Click'])
+    a = plotly.utils.PlotlyJSONEncoder
+    graphJSON = json.dumps(fig, cls=a)
+    return render_template('TopUsuariosCriticos.html',graphJSON=graphJSON)
 
-    return render_template('ejer_uno.html')
 
-
-@app.route('/ejerdos')
+@app.route('/TopPaginasVulnerables.html')
 def ejerDos():
-    return render_template('ejer_dos.html')
+    return render_template('TopPaginasVulnerables.html')
 
 
 
@@ -319,9 +327,9 @@ def ejerTres():
     return render_template('ejer_tres.html', observaciones=observaciones, missing=missing, mediana=mediana, media=media, varianza=varianza, max=max, min=min)
 
 
-@app.route('/ejercuatro')
+@app.route('/Ultimas10Vulnerabilidades.html')
 def ejerCuatro():
-    return render_template('ejer_cuatro.html')
+    return render_template('Ultimas10Vulnerabilidades.html')
 
 @app.route('/cuatroa')
 def cuatroA():
