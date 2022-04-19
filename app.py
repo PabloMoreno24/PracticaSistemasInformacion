@@ -1,5 +1,6 @@
+import pandas
 import plotly.utils
-from flask import Flask, render_template
+from flask import Flask, render_template, request
 import sqlite3
 import json
 import pandas as pd
@@ -188,6 +189,7 @@ df_vulnerable = pd.DataFrame()
 df_conexiones = pd.DataFrame()
 df_critico = pd.DataFrame()
 
+
 def ejercicioCuatro():
 
     cursor_obj.execute('SELECT nombrel,cookies,aviso,proteccion_de_datos FROM legal ORDER BY politicas')
@@ -196,7 +198,7 @@ def ejercicioCuatro():
     cookies = []
     avisos = []
     proteccion_de_datos = []
-    for i in range(0,5):
+    for i in range(len(rows)):
         nombre += [rows[i][0]]
         cookies += [rows[i][1]]
         avisos += [rows[i][2]]
@@ -263,18 +265,13 @@ def ejercicioCuatro():
         res += [i[0]]
     df_conexiones['No Vulnerables'] = res
 
-    cursor_obj.execute('SELECT nombre FROM users where passVul=1 ORDER BY probabilidad_click DESC')
-    rows = cursor_obj.fetchall()
-    res = []
-    for i in range(0,10):
-        res += [rows[i][0]]
-    df_critico['Nombre'] = res
+
 
     cursor_obj.execute('SELECT probabilidad_click FROM users where passVul=1 ORDER BY probabilidad_click DESC')
     rows = cursor_obj.fetchall()
     res = []
-    for i in range(0, 10):
-        res += [rows[i][0]]
+    for i in rows:
+        res += [i[0]]
     df_critico['Probabilidad de Click'] = res
 
 
@@ -295,15 +292,66 @@ def Casa():  # put application's code here
     return render_template('index.html')
 
 
-@app.route('/TopUsuariosCriticos.html')
-def ejerUno():
+@app.route('/TopUsuariosCriticos.html', methods=["GET","POST"])
+def topUssersCrit():
+    num = request.form.get('numero', default=10)
+    if(num==''):
+        num = 10
+    df_critico = pandas.DataFrame()
+    con = sqlite3.connect('practica.db')
+    cursor_obj = con.cursor()
+    query = """SELECT nombre,probabilidad_click FROM users where passVul=1 ORDER BY probabilidad_click DESC LIMIT (?)"""
+    cursor_obj.execute(query,(num,))
+    rows = cursor_obj.fetchall()
+    nombre = []
+    prob = []
+    for i in range(len(rows)):
+        nombre += [rows[i][0]]
+        prob += [rows[i][1]]
+    df_critico['Nombre'] = nombre
+    df_critico['Probabilidad de Click'] = prob
     fig = px.bar(df_critico, x=df_critico['Nombre'], y=df_critico['Probabilidad de Click'])
     a = plotly.utils.PlotlyJSONEncoder
     graphJSON = json.dumps(fig, cls=a)
+    con.close()
     return render_template('TopUsuariosCriticos.html',graphJSON=graphJSON)
 
+@app.route('/TopPaginasVulnerables.html', methods=["GET","POST"])
+def topWebsVuln():
+    num = request.form.get('numero', default=10)
+    if (num == ''):
+        num = 10
+    df_topWebs =pandas.DataFrame()
+    con = sqlite3.connect('practica.db')
+    cursor_obj = con.cursor()
+    query = """SELECT nombrel,cookies,aviso,proteccion_de_datos FROM legal ORDER BY politicas LIMIT (?)"""
+    cursor_obj.execute(query, (num,))
+    rows = cursor_obj.fetchall()
+    nombre = []
+    cookies = []
+    avisos = []
+    proteccion_de_datos = []
+    for i in range(len(rows)):
+        nombre += [rows[i][0]]
+        cookies += [rows[i][1]]
+        avisos += [rows[i][2]]
+        proteccion_de_datos += [rows[i][3]]
+    df_topWebs['Nombre'] = nombre
+    df_topWebs['Cookies'] = cookies
+    df_topWebs['Avisos'] = avisos
+    df_topWebs['Proteccion de Datos'] = proteccion_de_datos
+    fig = go.Figure(data=[
+        go.Bar(name='Cookies', x=df_topWebs['Nombre'], y=df_topWebs['Cookies'], marker_color='steelblue'),
+        go.Bar(name='Avisos', x=df_topWebs['Nombre'], y=df_topWebs['Avisos'], marker_color='lightsalmon'),
+        go.Bar(name='Proteccion de datos', x=df_topWebs['Nombre'], y=df_topWebs['Proteccion de Datos'], marker_color='red')
+    ])
+    # Change the bar mode
+    fig.update_layout(title_text="Peores Webs", title_font_size=41, barmode='group')
+    a = plotly.utils.PlotlyJSONEncoder
+    graphJSON = json.dumps(fig, cls=a)
+    return render_template('TopPaginasVulnerables.html', graphJSON=graphJSON)
 
-@app.route('/TopPaginasVulnerables.html')
+
 def ejerDos():
     return render_template('TopPaginasVulnerables.html')
 

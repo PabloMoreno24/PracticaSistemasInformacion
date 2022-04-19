@@ -49,7 +49,22 @@
       </div>
     </section>
 
-
+<div>
+    <form action="" method="post">
+        <label for="numero">TOP X</label>
+        <input type="number" id="numero" name="numero">
+        <input type="submit" id="sendnumber" name="sendnumber">
+        <br>
+    </form>
+    {% if graphJSON %}
+  <div id='chart' class='chart'?></div>
+    <script src='https://cdn.plot.ly/plotly-latest.min.js'></script>
+    <script type='text/javascript'>
+      var graphs = {{graphJSON | safe}};
+      Plotly.plot('chart',graphs,{});
+    </script>
+{% endif %}
+</div>
     
     <footer class="u-align-center u-clearfix u-footer u-grey-80 u-footer" id="sec-b796"><div class="u-clearfix u-sheet u-sheet-1">
         <p class="u-small-text u-text u-text-variant u-text-1">Sample text. Click to select the text box. Click again or double click to start editing the text.</p>
