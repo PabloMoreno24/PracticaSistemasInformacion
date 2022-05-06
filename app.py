@@ -1,3 +1,5 @@
+from subprocess import call
+
 import pandas
 import plotly.utils
 from flask import Flask, render_template, request
@@ -9,14 +11,93 @@ import plotly.graph_objects as go
 import plotly.express as px
 from urllib.request import urlopen
 import hashlib
-
+import requests
+import matplotlib.pyplot as plt
+import graphviz
+from sklearn import datasets, linear_model, tree
+from sklearn.metrics import mean_squared_error, r2_score
+from sklearn.tree import export_graphviz
+from sklearn.ensemble import RandomForestClassifier
 
 app = Flask(__name__)
 
 f = open('legal.json')
 f2 = open('users.json')
+f3 = open('users_IA_clases.json')
+f4 = open('users_IA_predecir.json')
 data = json.load(f)
 data2 = json.load(f2)
+dataClases = json.load(f3)
+dataPredecir = json.load(f4)
+
+
+X = []
+arrayUsersXp = []
+arrayUsersY = []
+
+for i in dataClases['usuarios']:
+
+    auxArray = []
+
+    if (i['emails_phishing_recibidos'] == 0):
+        auxArray.append(0)
+    else:
+        auxArray.append(i['emails_phishing_clicados'] / i['emails_phishing_recibidos'])
+
+    arrayUsersY.append(i['vulnerable'])
+    arrayUsersXp.append(auxArray)
+    X.append([i['emails_phishing_clicados'], i['emails_phishing_recibidos']])
+
+X_train = X[:-20]
+X_test = arrayUsersXp[-20:]
+Y_train = arrayUsersY[:-20]
+Y_test = arrayUsersY[-20:]
+
+
+def linear():
+    print(arrayUsersXp)
+    print(arrayUsersY)
+    print(X)
+    reg = linear_model.LinearRegression().fit(X_train, Y_train)
+    c = reg.coef_
+    print(c.T[0])
+    inter = reg.intercept_
+    multi = []
+    for i in range(len(X_test)):
+        aux = X_test[i]
+        multi.append(c.T[0] * aux[0] + inter)
+    print(reg.intercept_)
+    plt.scatter(X_test, Y_test, color="red")
+    plt.plot(X_test, multi, color="blue", linewidth="3")
+    plt.xticks(())
+    plt.yticks(())
+    plt.show()
+
+
+def randomBosque():
+    clf = RandomForestClassifier(max_depth=2, random_state=0, n_estimators=10)
+    clf.fit(X_train, Y_train)
+    for i in range(len(clf.estimators_)):
+        estimator = clf.estimators_[i]
+        export_graphviz(estimator, out_file='tree1.dot', rounded=True, proportion=False, precision=2, filled=True)
+
+        call(['dot', '-Tpng', 'tree1.dot', '-o', 'tree' + str(i) + '.png', '-Gdpi=600'])
+
+
+def arbolito():
+    clf = tree.DecisionTreeClassifier()
+    clf.fit(X_train, Y_train)
+    dot_data = tree.export_graphviz(clf, out_file=None)
+    graph = graphviz.Source(dot_data)
+    dot_data = tree.export_graphviz(clf, out_file=None,
+                                    filled=True, rounded=True,
+                                    special_characters=True)
+    graph = graphviz.Source(dot_data)
+    graph.render('test.gv', view = True).replace('\\', '/')
+
+linear()
+randomBosque()
+arbolito()
 
 def comprobarPassword(password):
     print("Comprobando ",password)
@@ -274,6 +355,8 @@ def ejercicioCuatro():
         res += [i[0]]
     df_critico['Probabilidad de Click'] = res
 
+#def regresionLineal():
+
 
 ejercicioDos()
 ejercicioTres()
@@ -377,7 +460,16 @@ def ejerTres():
 
 @app.route('/Ultimas10Vulnerabilidades.html')
 def ejerCuatro():
-    return render_template('Ultimas10Vulnerabilidades.html')
+    page = requests.get("https://cve.circl.lu/api/last")
+    jsons = page.json()
+    lista1 = []
+    lista2 = []
+    for i in range(0,10):
+        lista1 += [jsons[i]['id']]
+        lista2 += [jsons[i]['summary']]
+    fig = go.Figure(data=[go.Table(header=dict(values=['Vulnerability','Description']),cells=dict(values=[lista1,lista2]))])
+    table = plotly.io.to_html(fig)
+    return render_template('Ultimas10Vulnerabilidades.html',tableHTML=table)
 
 @app.route('/cuatroa')
 def cuatroA():
@@ -408,6 +500,7 @@ def cuatroC():
     a = plotly.utils.PlotlyJSONEncoder
     graphJSON = json.dumps(fig, cls=a)
     return render_template('cuatroApartados.html', graphJSON=graphJSON)
+
 
 @app.route('/cuatrod')
 def cuatroD():
