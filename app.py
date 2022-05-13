@@ -436,6 +436,20 @@ def topUssersCrit():
     fig = px.bar(df_critico, x=df_critico['Nombre'], y=df_critico['Probabilidad de Click'])
     a = plotly.utils.PlotlyJSONEncoder
     graphJSONUno = json.dumps(fig, cls=a)
+    pdf = PDF(orientation='P', unit='mm', format='A4')
+    pdf.add_page()
+    pdf_w = 210
+    pdf_h = 297
+    plotly.io.write_image(fig, file='pltx.png', format='png', width=700, height=450)
+    pltx = (os.getcwd() + '/' + "pltx.png")
+    pdf.set_xy(40.0, 25.0)
+    pdf.image(pltx, link='', type='', w=700 / 5, h=450 / 5)
+    pdf.set_font('Arial', '', 12)
+    pdf.set_text_color(0, 0, 0)
+    txt = "Se muestra el grafico de las paginas web mas vulnerables. En el eje X podemos ver los nombres de las paginas web en cuestion.El eje Y representa que si esta a 1 la politica esta activada y si esta a 0 no. "
+    pdf.set_xy(10.0, 130.0)
+    pdf.multi_cell(w=0, h=10, txt=txt, align='L')
+    pdf.output('static/topUsuariosCriticos.pdf', 'F')
     con.close()
     return render_template('TopUsuariosCriticos.html', graphJSONUno=graphJSONUno)
 
@@ -480,11 +494,12 @@ def topWebsVuln():
     pltx = (os.getcwd() + '/' + "pltx.png")
     pdf.set_xy(40.0, 25.0)
     pdf.image(pltx, link='', type='', w=700 / 5, h=450 / 5)
-    pdf.set_xy(10.0,100.0)
     pdf.set_font('Arial', '', 12)
-    pdf.set_text_color(76.0, 32.0, 250.0)
-    pdf.cell(w=210.0, h=40.0, align='C', txt="Se muestra el grafico de las paginas web mas vulnerables. En el eje X podemos ver los nombres de las paginas web en cuestion. El eje Y representa que si esta a 1 la politica esta activada y si esta a 0 no. ", border=0)
-    pdf.output('topPaginasVulnerables.pdf', 'F')
+    pdf.set_text_color(0,0,0)
+    txt="Se muestra el grafico de las paginas web mas vulnerables. En el eje X podemos ver los nombres de las paginas web en cuestion.El eje Y representa que si esta a 1 la politica esta activada y si esta a 0 no. "
+    pdf.set_xy(10.0, 130.0)
+    pdf.multi_cell(w=0, h=10, txt=txt,align='L')
+    pdf.output('static/topPaginasVulnerables.pdf', 'F')
     return render_template('TopPaginasVulnerables.html', graphJSON=graphJSON)
 
 
