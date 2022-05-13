@@ -82,7 +82,7 @@ def linear():
     plt.plot(X_test, multi, color="blue", linewidth="3")
     plt.xticks(())
     plt.yticks(())
-    plt.show()
+    plt.savefig('./static/images/plot.png')
 
 
 def randomBosque():
@@ -385,27 +385,38 @@ con.close()
 
 @app.route('/')
 def index():  # put application's code here
-
-    return render_template('index.html')
+    return render_template('Login.html')
 
 @app.route('/Casa.html')
 def Casa():  # put application's code here
+        return render_template("Casa.html")
 
-    return render_template('index.html')
 
-user = {"username": "abc", "password": "xyz"}
+users = [["admin","admin"],["normal","abc"]]
+app.secret_key = "TheSecretKey"
+
 @app.route('/Login.html',methods=["GET","POST"])
 def login():
     if (request.method == 'POST'):
         username = request.form.get('username')
         password = request.form.get('password')
-        if username == user['username'] and password == user['password']:
-            session['user'] = username
-            return redirect('/dashboard')
+        for i in range(len(users)):
+            if (users[i][0]==username and users[i][1]==password):
+                session['user'] = username
+                return redirect('/Casa.html')
 
         return "<h1>Wrong username or password</h1>"
 
     return render_template("Login.html")
+
+@app.route('/Register.html',methods=["GET","POST"])
+def register():
+    if (request.method == 'POST'):
+        username = request.form.get('username')
+        password = request.form.get('password')
+        users.append([username,password])
+
+    return render_template("Register.html")
 
 @app.route('/TopUsuariosCriticos.html', methods=["GET","POST"])
 def topUssersCrit():
@@ -446,7 +457,7 @@ def topUssersCrit():
     pdf.image(pltx, link='', type='', w=700 / 5, h=450 / 5)
     pdf.set_font('Arial', '', 12)
     pdf.set_text_color(0, 0, 0)
-    txt = "Se muestra el grafico de las paginas web mas vulnerables. En el eje X podemos ver los nombres de las paginas web en cuestion.El eje Y representa que si esta a 1 la politica esta activada y si esta a 0 no. "
+    txt = "Se muestra el top de usuarios críticos. En el eje X podemos ver los nombres de los usuarios cuestion.El eje Y representa la probabilidad de que el usuario pulse un correo spam."
     pdf.set_xy(10.0, 130.0)
     pdf.multi_cell(w=0, h=10, txt=txt, align='L')
     pdf.output('static/topUsuariosCriticos.pdf', 'F')
@@ -497,11 +508,15 @@ def topWebsVuln():
     pdf.set_font('Arial', '', 12)
     pdf.set_text_color(0,0,0)
     txt="Se muestra el grafico de las paginas web mas vulnerables. En el eje X podemos ver los nombres de las paginas web en cuestion.El eje Y representa que si esta a 1 la politica esta activada y si esta a 0 no. "
-    pdf.set_xy(10.0, 130.0)
+    pdf.set_xy(10.0, 140.0)
     pdf.multi_cell(w=0, h=10, txt=txt,align='L')
     pdf.output('static/topPaginasVulnerables.pdf', 'F')
     return render_template('TopPaginasVulnerables.html', graphJSON=graphJSON)
 
+@app.route("/IA.html")
+def IA():
+
+    return render_template("IA.html")
 
 def ejerDos():
     return render_template('TopPaginasVulnerables.html')
