@@ -1,8 +1,11 @@
+
+
+from collections import namedtuple
 from subprocess import call
 
 import pandas
 import plotly.utils
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request,redirect, session
 import sqlite3
 import json
 import pandas as pd
@@ -14,12 +17,19 @@ import hashlib
 import requests
 import matplotlib.pyplot as plt
 import graphviz
+from plotly.subplots import make_subplots
 from sklearn import datasets, linear_model, tree
 from sklearn.metrics import mean_squared_error, r2_score
 from sklearn.tree import export_graphviz
 from sklearn.ensemble import RandomForestClassifier
+from fpdf import FPDF
+import os
+import kaleido
+
+
 
 app = Flask(__name__)
+
 
 f = open('legal.json')
 f2 = open('users.json')
@@ -29,7 +39,6 @@ data = json.load(f)
 data2 = json.load(f2)
 dataClases = json.load(f3)
 dataPredecir = json.load(f4)
-
 
 X = []
 arrayUsersXp = []
@@ -52,6 +61,8 @@ X_train = X[:-20]
 X_test = arrayUsersXp[-20:]
 Y_train = arrayUsersY[:-20]
 Y_test = arrayUsersY[-20:]
+feat_names = ['Emails Recibidos (phishing)', 'Emails cliclados (phishing)']
+targ_name = ['No Vulnerable','Vulnerable']
 
 
 def linear():
@@ -79,7 +90,7 @@ def randomBosque():
     clf.fit(X_train, Y_train)
     for i in range(len(clf.estimators_)):
         estimator = clf.estimators_[i]
-        export_graphviz(estimator, out_file='tree1.dot', rounded=True, proportion=False, precision=2, filled=True)
+        export_graphviz(estimator, out_file='tree1.dot',feature_names=feat_names,class_names=targ_name, rounded=True, proportion=False, precision=2, filled=True)
 
         call(['dot', '-Tpng', 'tree1.dot', '-o', 'tree' + str(i) + '.png', '-Gdpi=600'])
 
@@ -89,15 +100,15 @@ def arbolito():
     clf.fit(X_train, Y_train)
     dot_data = tree.export_graphviz(clf, out_file=None)
     graph = graphviz.Source(dot_data)
-    dot_data = tree.export_graphviz(clf, out_file=None,
+    dot_data = tree.export_graphviz(clf, out_file=None,feature_names=feat_names,class_names=targ_name,
                                     filled=True, rounded=True,
                                     special_characters=True)
     graph = graphviz.Source(dot_data)
     graph.render('test.gv', view = True).replace('\\', '/')
 
-linear()
-randomBosque()
-arbolito()
+#linear()
+#randomBosque()
+#arbolito()
 
 def comprobarPassword(password):
     print("Comprobando ",password)
@@ -148,7 +159,12 @@ for i in data2['usuarios']:
         con.commit()
 
 con.commit()
+class PDF(FPDF):
+    pass
+
+
 df = pd.DataFrame()
+
 def ejercicioDos():
     cursor_obj.execute('SELECT num_fechas FROM users')
     rows = cursor_obj.fetchall()
@@ -362,6 +378,9 @@ ejercicioDos()
 ejercicioTres()
 ejercicioCuatro()
 
+
+
+
 con.close()
 
 @app.route('/')
@@ -374,17 +393,38 @@ def Casa():  # put application's code here
 
     return render_template('index.html')
 
+user = {"username": "abc", "password": "xyz"}
+@app.route('/Login.html',methods=["GET","POST"])
+def login():
+    if (request.method == 'POST'):
+        username = request.form.get('username')
+        password = request.form.get('password')
+        if username == user['username'] and password == user['password']:
+            session['user'] = username
+            return redirect('/dashboard')
+
+        return "<h1>Wrong username or password</h1>"
+
+    return render_template("Login.html")
 
 @app.route('/TopUsuariosCriticos.html', methods=["GET","POST"])
 def topUssersCrit():
     num = request.form.get('numero', default=10)
+    probNum = request.form.get('porcentaje',default='0')
     if(num==''):
         num = 10
     df_critico = pandas.DataFrame()
     con = sqlite3.connect('practica.db')
     cursor_obj = con.cursor()
-    query = """SELECT nombre,probabilidad_click FROM users where passVul=1 ORDER BY probabilidad_click DESC LIMIT (?)"""
-    cursor_obj.execute(query,(num,))
+
+    if(probNum == '0'):
+        query = """SELECT nombre,probabilidad_click FROM users where passVul=1 ORDER BY probabilidad_click DESC LIMIT (?)"""
+    elif(probNum == '1'):
+        query = """SELECT nombre,probabilidad_click FROM users where passVul=1 AND probabilidad_click>=50 ORDER BY probabilidad_click DESC LIMIT (?)"""
+    elif(probNum =='2'):
+        query = """SELECT nombre,probabilidad_click FROM users where passVul=1 AND probabilidad_click<50 ORDER BY probabilidad_click DESC LIMIT (?)"""
+
+    cursor_obj.execute(query, (num,))
     rows = cursor_obj.fetchall()
     nombre = []
     prob = []
@@ -395,9 +435,9 @@ def topUssersCrit():
     df_critico['Probabilidad de Click'] = prob
     fig = px.bar(df_critico, x=df_critico['Nombre'], y=df_critico['Probabilidad de Click'])
     a = plotly.utils.PlotlyJSONEncoder
-    graphJSON = json.dumps(fig, cls=a)
+    graphJSONUno = json.dumps(fig, cls=a)
     con.close()
-    return render_template('TopUsuariosCriticos.html',graphJSON=graphJSON)
+    return render_template('TopUsuariosCriticos.html', graphJSONUno=graphJSONUno)
 
 @app.route('/TopPaginasVulnerables.html', methods=["GET","POST"])
 def topWebsVuln():
@@ -432,13 +472,24 @@ def topWebsVuln():
     fig.update_layout(title_text="Peores Webs", title_font_size=41, barmode='group')
     a = plotly.utils.PlotlyJSONEncoder
     graphJSON = json.dumps(fig, cls=a)
+    pdf = PDF(orientation='P', unit='mm', format='A4')
+    pdf.add_page()
+    pdf_w = 210
+    pdf_h = 297
+    plotly.io.write_image(fig, file='pltx.png', format='png', width=700, height=450)
+    pltx = (os.getcwd() + '/' + "pltx.png")
+    pdf.set_xy(40.0, 25.0)
+    pdf.image(pltx, link='', type='', w=700 / 5, h=450 / 5)
+    pdf.set_xy(10.0,100.0)
+    pdf.set_font('Arial', '', 12)
+    pdf.set_text_color(76.0, 32.0, 250.0)
+    pdf.cell(w=210.0, h=40.0, align='C', txt="Se muestra el grafico de las paginas web mas vulnerables. En el eje X podemos ver los nombres de las paginas web en cuestion. El eje Y representa que si esta a 1 la politica esta activada y si esta a 0 no. ", border=0)
+    pdf.output('topPaginasVulnerables.pdf', 'F')
     return render_template('TopPaginasVulnerables.html', graphJSON=graphJSON)
 
 
 def ejerDos():
     return render_template('TopPaginasVulnerables.html')
-
-
 
 @app.route('/ejertres')
 def ejerTres():
@@ -523,6 +574,13 @@ def cuatroE():
     a = plotly.utils.PlotlyJSONEncoder
     graphJSON = json.dumps(fig, cls=a)
     return render_template('cuatroApartados.html', graphJSON=graphJSON)
+
+
+### define a method
+def charts(self):
+        self.set_xy(40.0,25.0)
+        self.image(plt,  link='', type='', w=700/5, h=450/5)
+
 
 if __name__ == '__main__':
     app.run()

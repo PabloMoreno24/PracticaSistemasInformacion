@@ -53,19 +53,25 @@
     <form action="" method="post">
         <label for="numero">TOP X</label>
         <input type="number" id="numero" name="numero">
+        <label for="porcentaje">Seleccionar porcentaje</label>
+        <select id="porcentaje" name="porcentaje">
+            <option value="0">Todos</option>
+            <option value="1">Mayor 50</option>
+            <option value="2">Menor 50</option>
+        </select>
         <input type="submit" id="sendnumber" name="sendnumber">
         <br>
     </form>
-    {% if graphJSON %}
+    {% if graphJSONUno %}
   <div id='chart' class='chart'?></div>
     <script src='https://cdn.plot.ly/plotly-latest.min.js'></script>
     <script type='text/javascript'>
-      var graphs = {{graphJSON | safe}};
+      var graphs = {{graphJSONUno | safe}};
       Plotly.plot('chart',graphs,{});
     </script>
 {% endif %}
 </div>
-    
+
     <footer class="u-align-center u-clearfix u-footer u-grey-80 u-footer" id="sec-b796"><div class="u-clearfix u-sheet u-sheet-1">
         <p class="u-small-text u-text u-text-variant u-text-1">Sample text. Click to select the text box. Click again or double click to start editing the text.</p>
       </div></footer>
