@@ -84,20 +84,24 @@ def linear():
     plt.yticks(())
     plt.savefig('./static/images/plot.png')
 
-
+randomRess = []
 def randomBosque():
     clf = RandomForestClassifier(max_depth=2, random_state=0, n_estimators=10)
     clf.fit(X_train, Y_train)
+    for i in test:
+        randomRess.append(clf.predict([i]))
     for i in range(len(clf.estimators_)):
         estimator = clf.estimators_[i]
         export_graphviz(estimator, out_file='tree1.dot',feature_names=feat_names,class_names=targ_name, rounded=True, proportion=False, precision=2, filled=True)
 
         call(['dot', '-Tpng', 'tree1.dot', '-o', 'tree' + str(i) + '.png', '-Gdpi=600'])
 
-
+arbolResultados = []
 def arbolito():
     clf = tree.DecisionTreeClassifier()
     clf.fit(X_train, Y_train)
+    for i in test:
+        arbolResultados.append(clf.predict([i]))
     dot_data = tree.export_graphviz(clf, out_file=None)
     graph = graphviz.Source(dot_data)
     dot_data = tree.export_graphviz(clf, out_file=None,feature_names=feat_names,class_names=targ_name,
