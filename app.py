@@ -61,7 +61,7 @@ X_train = X[:-20]
 X_test = arrayUsersXp[-20:]
 Y_train = arrayUsersY[:-20]
 Y_test = arrayUsersY[-20:]
-feat_names = ['Emails Recibidos (phishing)', 'Emails cliclados (phishing)']
+feat_names = ['Emails cliclados (phishing)','Emails Recibidos (phishing)',]
 targ_name = ['No Vulnerable','Vulnerable']
 
 
